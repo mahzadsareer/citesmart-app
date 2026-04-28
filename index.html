@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CiteSmart — AI-Powered Citation Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1714;
+    --ink2: #3d3830;
+    --ink3: #7a7060;
+    --paper: #f7f4ef;
+    --paper2: #ede9e1;
+    --paper3: #e2ddd3;
+    --gold: #c8922a;
+    --gold2: #e8b54a;
+    --red: #c0392b;
+    --green: #2d7d4e;
+    --border: rgba(26,23,20,0.12);
+    --border2: rgba(26,23,20,0.22);
+    --shadow: 0 2px 12px rgba(26,23,20,0.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+
+  /* HEADER */
+  .site-header { background: var(--ink); color: var(--paper); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; border-bottom: 2px solid var(--gold); }
+  .logo { display: flex; align-items: baseline; gap: 8px; }
+  .logo-word { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; color: var(--paper); letter-spacing: -0.02em; }
+  .logo-word span { color: var(--gold2); }
+  .logo-tag { font-size: 11px; color: rgba(247,244,239,0.4); font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; }
+  .header-nav { display: flex; gap: 4px; }
+  .nav-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; color: rgba(247,244,239,0.65); background: transparent; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer; transition: color 0.2s, background 0.2s; }
+  .nav-btn:hover { color: var(--paper); background: rgba(255,255,255,0.07); }
+  .nav-btn.active { color: var(--gold2); font-weight: 500; }
+
+  /* HERO */
+  .hero { background: var(--ink); color: var(--paper); padding: 3.5rem 2rem 3rem; text-align: center; border-bottom: 1px solid rgba(200,146,42,0.3); }
+  .hero-eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold2); font-weight: 500; margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px,4vw,44px); font-weight: 600; line-height: 1.15; margin-bottom: 1rem; letter-spacing: -0.02em; }
+  .hero h1 em { font-style: italic; color: var(--gold2); }
+  .hero p { font-size: 15px; color: rgba(247,244,239,0.65); max-width: 520px; margin: 0 auto 2rem; font-weight: 300; line-height: 1.7; }
+  .style-pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .style-pill { font-size: 11px; padding: 4px 12px; border: 1px solid rgba(200,146,42,0.35); border-radius: 100px; color: rgba(247,244,239,0.55); letter-spacing: 0.05em; }
+
+  /* MAIN */
+  .main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+  /* MODE TABS */
+  .mode-tabs { display: flex; border: 1px solid var(--border2); border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem; background: var(--paper2); }
+  .mode-tab { flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 10px 8px; background: transparent; border: none; cursor: pointer; color: var(--ink3); transition: all 0.2s; text-align: center; border-right: 1px solid var(--border); line-height: 1.4; }
+  .mode-tab:last-child { border-right: none; }
+  .mode-tab.active { background: var(--ink); color: var(--paper); font-weight: 500; }
+  .mode-tab .tab-icon { display: block; font-size: 16px; margin-bottom: 2px; }
+
+  /* INPUT PANEL */
+  .input-panel { background: #fff; border: 1px solid var(--border2); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+  .input-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink3); margin-bottom: 0.5rem; display: block; }
+  .hint-text { font-size: 13px; color: var(--ink3); line-height: 1.5; margin-bottom: 0.85rem; font-weight: 300; }
+  .main-input { width: 100%; font-family: 'DM Sans', sans-serif; font-size: 14px; padding: 11px 14px; border: 1px solid var(--border2); border-radius: 8px; background: var(--paper); color: var(--ink); transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+  .main-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,146,42,0.12); }
+  textarea.main-input { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  /* MANUAL GRID */
+  .manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .manual-grid .full { grid-column: 1 / -1; }
+  .manual-grid input { width: 100%; font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 9px 12px; border: 1px solid var(--border2); border-radius: 6px; background: var(--paper); color: var(--ink); outline: none; transition: border-color 0.2s; }
+  .manual-grid input:focus { border-color: var(--gold); }
+  .manual-grid input::placeholder { color: var(--ink3); opacity: 0.6; }
+
+  /* OPTIONS ROW */
+  .options-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .opt-group { display: flex; flex-direction: column; gap: 4px; }
+  .opt-group label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); font-weight: 500; }
+  select { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 8px 32px 8px 10px; border: 1px solid var(--border2); border-radius: 6px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a7060'/%3E%3C/svg%3E") no-repeat right 10px center; color: var(--ink); cursor: pointer; appearance: none; -webkit-appearance: none; outline: none; transition: border-color 0.2s; min-width: 150px; }
+  select:focus { border-color: var(--gold); }
+
+  /* GEN BUTTON */
+  .gen-btn { font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 9px 24px; background: var(--ink); color: var(--paper); border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s, transform 0.1s; margin-left: auto; display: flex; align-items: center; gap: 6px; letter-spacing: 0.01em; }
+  .gen-btn:hover { background: var(--gold); color: var(--ink); }
+  .gen-btn:active { transform: scale(0.98); }
+  .gen-btn:disabled { opacity: 0.45; pointer-events: none; }
+  .gen-btn .arrow { transition: transform 0.2s; }
+  .gen-btn:hover .arrow { transform: translateX(3px); }
+
+  /* PROGRESS */
+  .progress-wrap { height: 3px; background: var(--paper3); border-radius: 3px; margin-bottom: 1rem; overflow: hidden; display: none; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 3px; width: 0; transition: width 0.3s ease; }
+  .status-msg { font-size: 13px; color: var(--ink3); min-height: 20px; margin-bottom: 1rem; font-style: italic; display: flex; align-items: center; gap: 6px; }
+  .status-msg.loading::before { content: ''; width: 12px; height: 12px; border: 2px solid var(--gold); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* RESULT CARD */
+  .result-card { background: #fff; border: 1px solid var(--border2); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 1.5rem; display: none; animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .result-header { background: var(--ink); color: var(--paper); padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .result-header-left { display: flex; align-items: center; gap: 8px; }
+  .result-title { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; color: var(--gold2); }
+  .badge { font-size: 10px; padding: 2px 8px; border-radius: 100px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
+  .badge-style { background: rgba(200,146,42,0.2); color: var(--gold2); }
+  .badge-web { background: rgba(45,125,78,0.2); color: #5cbe83; }
+  .badge-manual { background: rgba(247,244,239,0.12); color: rgba(247,244,239,0.55); }
+  .result-body { padding: 1.25rem; }
+  .ref-display { font-size: 14.5px; line-height: 1.75; color: var(--ink); margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .intext-display { font-family: 'DM Mono', monospace; font-size: 13px; background: var(--paper); color: var(--ink2); padding: 6px 12px; border-radius: 6px; display: inline-block; margin-bottom: 1rem; border: 1px solid var(--border); }
+  .intext-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink3); margin-right: 6px; }
+  .notes-display { font-size: 12.5px; color: var(--ink3); font-style: italic; padding-top: 0.75rem; border-top: 1px solid var(--border); margin-top: 0.75rem; display: none; }
+  .result-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .action-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 6px 14px; border: 1px solid var(--border2); border-radius: 6px; background: transparent; cursor: pointer; color: var(--ink2); transition: all 0.15s; }
+  .action-btn:hover { background: var(--paper2); border-color: var(--ink3); }
+  .action-btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .action-btn.primary:hover { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+  .copied-flash { font-size: 12px; color: #5cbe83; font-weight: 500; opacity: 0; transition: opacity 0.3s; }
+  .copied-flash.show { opacity: 1; }
+
+  /* ERROR CARD */
+  .error-card { background: #fff5f5; border: 1px solid rgba(192,57,43,0.25); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: none; }
+  .error-card p { font-size: 13.5px; color: var(--red); line-height: 1.5; }
+  .error-card strong { font-weight: 600; }
+
+  /* LIBRARY */
+  .library-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px; }
+  .library-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; }
+  .stat-chips { display: flex; gap: 8px; }
+  .stat-chip { font-size: 12px; padding: 4px 12px; border-radius: 100px; background: var(--paper2); color: var(--ink2); border: 1px solid var(--border); }
+  .stat-chip strong { font-weight: 600; color: var(--ink); }
+  .lib-filter { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+  .lib-filter input { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 12px; border: 1px solid var(--border2); border-radius: 6px; background: #fff; color: var(--ink); outline: none; flex: 1; min-width: 180px; transition: border-color 0.2s; }
+  .lib-filter input:focus { border-color: var(--gold); }
+  .lib-filter select { min-width: 120px; }
+  .lib-item { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; transition: border-color 0.2s, box-shadow 0.2s; }
+  .lib-item:hover { border-color: var(--border2); box-shadow: var(--shadow); }
+  .lib-item-ref { font-size: 14px; line-height: 1.7; color: var(--ink); margin-bottom: 0.6rem; }
+  .lib-item-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .lib-item-actions { margin-left: auto; display: flex; gap: 6px; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--ink3); }
+  .empty-state .empty-icon { font-size: 36px; margin-bottom: 0.75rem; opacity: 0.4; }
+  .empty-state p { font-size: 14px; }
+
+  /* EXPORT */
+  .export-panel { background: #fff; border: 1px solid var(--border2); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
+  .export-panel h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 600; margin-bottom: 1rem; }
+  .export-output { font-family: 'DM Mono', monospace; font-size: 12.5px; line-height: 1.7; background: var(--paper); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; white-space: pre-wrap; max-height: 360px; overflow-y: auto; color: var(--ink2); margin-bottom: 1rem; }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .section-eyebrow { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); font-weight: 500; margin-bottom: 0.4rem; }
+
+  /* FOOTER */
+  .site-footer { background: var(--ink); color: rgba(247,244,239,0.4); text-align: center; padding: 1.5rem; font-size: 12px; border-top: 1px solid rgba(200,146,42,0.2); margin-top: 2rem; }
+  .site-footer strong { color: var(--gold2); }
+
+  /* API KEY BANNER */
+  .api-key-banner { background: var(--gold-light, #faf0dc); border: 1px solid rgba(200,146,42,0.4); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .api-key-banner p { font-size: 13px; color: var(--ink2); flex: 1; min-width: 200px; }
+  .api-key-banner input { font-family: 'DM Mono', monospace; font-size: 12px; padding: 7px 12px; border: 1px solid var(--border2); border-radius: 6px; background: #fff; color: var(--ink); outline: none; width: 280px; transition: border-color 0.2s; }
+  .api-key-banner input:focus { border-color: var(--gold); }
+
+  @media(max-width:600px) {
+    .options-row { flex-direction: column; align-items: stretch; }
+    .gen-btn { margin-left: 0; justify-content: center; }
+    .manual-grid { grid-template-columns: 1fr; }
+    .manual-grid .full { grid-column: 1; }
+    select { min-width: 100%; }
+    .hero { padding: 2rem 1rem 1.5rem; }
+    .hero h1 { font-size: 26px; }
+    .api-key-banner input { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo">
+    <span class="logo-word">Cite<span>Smart</span></span>
+    <span class="logo-tag">AI Citations</span>
+  </div>
+  <nav class="header-nav">
+    <button class="nav-btn active" onclick="showSection('generate', this)">Generate</button>
+    <button class="nav-btn" onclick="showSection('library', this)">Library</button>
+    <button class="nav-btn" onclick="showSection('export', this)">Export</button>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-eyebrow">AI-Powered Academic Citations</div>
+  <h1>Every reference, <em>perfectly</em> formatted.</h1>
+  <p>Generate citations from URLs, DOIs, ISBNs — or paste a full reference text and let AI verify, correct and reformat it in seconds.</p>
+  <div class="style-pills">
+    <span class="style-pill">Harvard</span>
+    <span class="style-pill">APA 7th</span>
+    <span class="style-pill">MLA 9th</span>
+    <span class="style-pill">Chicago</span>
+    <span class="style-pill">Vancouver</span>
+    <span class="style-pill">IEEE</span>
+    <span class="style-pill">OSCOLA</span>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- API KEY INPUT (only shown when running standalone / no server-side key) -->
+  <div class="api-key-banner" id="api-key-banner" style="display:none">
+    <p>🔑 Enter your Anthropic API key to enable AI citation generation. It stays in your browser only.</p>
+    <input type="password" id="api-key-input" placeholder="sk-ant-..." oninput="saveKey(this.value)">
+  </div>
+
+  <!-- GENERATE -->
+  <section id="sec-generate" class="section active">
+    <div class="section-eyebrow">Step 1 — Choose input mode</div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('auto', this)" id="mtab-auto">
+        <span class="tab-icon">🔗</span>
+        <span class="tab-label">URL / DOI / ISBN</span>
+      </button>
+      <button class="mode-tab" onclick="setMode('fullref', this)" id="mtab-fullref">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">Full reference text</span>
+      </button>
+      <button class="mode-tab" onclick="setMode('manual', this)" id="mtab-manual">
+        <span class="tab-icon">✏️</span>
+        <span class="tab-label">Manual entry</span>
+      </button>
+    </div>
+
+    <div class="input-panel">
+      <div id="inp-auto">
+        <span class="input-label">Source identifier</span>
+        <p class="hint-text">Paste a webpage URL, journal DOI (starts with 10.), or book ISBN. The AI fetches metadata and formats your citation automatically.</p>
+        <input type="text" class="main-input" id="auto-val" placeholder="https://doi.org/10.1257/jep.35.2.3  or  https://example.com/article  or  978-0-7432-7356-5">
+      </div>
+      <div id="inp-fullref" style="display:none">
+        <span class="input-label">Paste existing reference</span>
+        <p class="hint-text">Paste any reference — messy, wrong style, or incomplete. The AI parses it, searches the web to verify and fill missing fields, then reformats it perfectly.</p>
+        <textarea class="main-input" id="fullref-val" placeholder="e.g.  Smith, J. (2021). Artificial intelligence and labour markets. Journal of Economic Perspectives, 35(2), 3–30. https://doi.org/10.1257/jep.35.2.3"></textarea>
+      </div>
+      <div id="inp-manual" style="display:none">
+        <span class="input-label">Manual source details</span>
+        <div class="manual-grid" style="margin-top:0.5rem">
+          <input type="text" id="m-author" placeholder="Author(s) — Last, F.">
+          <input type="text" id="m-year" placeholder="Year">
+          <input type="text" id="m-title" class="full" placeholder="Title of article / book / chapter">
+          <input type="text" id="m-journal" class="full" placeholder="Journal / Book / Website name">
+          <input type="text" id="m-vol" placeholder="Volume(Issue)">
+          <input type="text" id="m-pages" placeholder="Pages">
+          <input type="text" id="m-doi" class="full" placeholder="DOI or URL (optional)">
+          <select id="m-type" class="full">
+            <option>Journal article</option><option>Book</option><option>Book chapter</option>
+            <option>Website</option><option>Conference paper</option><option>Thesis / dissertation</option>
+            <option>Report</option><option>News article</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-eyebrow">Step 2 — Choose citation style &amp; generate</div>
+    <div class="options-row">
+      <div class="opt-group">
+        <label>Citation style</label>
+        <select id="cite-style">
+          <option value="Harvard">Harvard</option>
+          <option value="APA 7th">APA 7th</option>
+          <option value="APA 6th">APA 6th</option>
+          <option value="MLA 9th">MLA 9th</option>
+          <option value="Chicago Author-Date">Chicago Author-Date</option>
+          <option value="Chicago Notes-Bibliography">Chicago Notes-Bibliography</option>
+          <option value="Vancouver">Vancouver</option>
+          <option value="IEEE">IEEE</option>
+          <option value="OSCOLA">OSCOLA (Law)</option>
+        </select>
+      </div>
+      <div class="opt-group" id="src-type-group">
+        <label>Source type</label>
+        <select id="cite-srctype">
+          <option>Journal article</option><option>Book</option><option>Book chapter</option>
+          <option>Website</option><option>Conference paper</option><option>Thesis / dissertation</option>
+          <option>Report</option><option>News article</option>
+        </select>
+      </div>
+      <button class="gen-btn" id="gen-btn" onclick="generateCitation()">
+        Generate <span class="arrow">→</span>
+      </button>
+    </div>
+
+    <div class="progress-wrap" id="prog-wrap"><div class="progress-bar" id="prog-bar"></div></div>
+    <div class="status-msg" id="status-msg"></div>
+    <div class="error-card" id="error-card"><p id="error-msg"></p></div>
+
+    <div class="result-card" id="result-card">
+      <div class="result-header">
+        <div class="result-header-left">
+          <span class="result-title">Generated citation</span>
+          <span class="badge badge-style" id="rb-style"></span>
+          <span class="badge" id="rb-source"></span>
+        </div>
+        <span class="copied-flash" id="copy-flash">✓ Copied</span>
+      </div>
+      <div class="result-body">
+        <div class="ref-display" id="r-ref"></div>
+        <div>
+          <span class="intext-label">In-text:</span>
+          <span class="intext-display" id="r-intext"></span>
+        </div>
+        <div class="notes-display" id="r-notes"></div>
+        <div class="result-actions" style="margin-top:1rem">
+          <button class="action-btn" onclick="copyText('ref')">Copy reference</button>
+          <button class="action-btn" onclick="copyText('intext')">Copy in-text</button>
+          <button class="action-btn primary" onclick="saveToLibrary()">+ Add to library</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="sec-library" class="section">
+    <div class="library-header">
+      <div>
+        <div class="section-eyebrow">Your saved citations</div>
+        <div class="library-title">Citation Library</div>
+      </div>
+      <div class="stat-chips">
+        <span class="stat-chip"><strong id="st-total">0</strong> total</span>
+        <span class="stat-chip"><strong id="st-verified">0</strong> verified</span>
+        <span class="stat-chip"><strong id="st-styles">0</strong> styles</span>
+      </div>
+    </div>
+    <div class="lib-filter">
+      <input type="text" id="lib-search" placeholder="Search references..." oninput="renderLibrary()">
+      <select id="lib-style-filter" onchange="renderLibrary()">
+        <option value="">All styles</option>
+        <option>Harvard</option><option>APA 7th</option><option>APA 6th</option>
+        <option>MLA 9th</option><option>Chicago Author-Date</option><option>Vancouver</option>
+        <option>IEEE</option><option>OSCOLA (Law)</option>
+      </select>
+    </div>
+    <div id="lib-list"></div>
+  </section>
+
+  <!-- EXPORT -->
+  <section id="sec-export" class="section">
+    <div class="export-panel">
+      <div class="section-eyebrow">Export your bibliography</div>
+      <h3>Reference List Export</h3>
+      <div class="options-row" style="margin-bottom:1rem">
+        <div class="opt-group">
+          <label>Export style</label>
+          <select id="exp-style">
+            <option>Harvard</option><option>APA 7th</option><option>MLA 9th</option>
+            <option>Chicago Author-Date</option><option>Vancouver</option>
+            <option>BibTeX</option><option>RIS format</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <label>Sort by</label>
+          <select id="exp-sort">
+            <option value="alpha">Alphabetical (A–Z)</option>
+            <option value="added">Date added (newest first)</option>
+            <option value="style">Style</option>
+          </select>
+        </div>
+        <button class="gen-btn" onclick="buildExport()">Build export <span class="arrow">→</span></button>
+      </div>
+      <div id="exp-area"><div class="empty-state"><div class="empty-icon">📄</div><p>Your formatted bibliography will appear here.</p></div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <strong>CiteSmart</strong> — AI-powered citation manager &nbsp;·&nbsp; Harvard · APA · MLA · Chicago · Vancouver · IEEE
+</footer>
+
+<script>
+let library = JSON.parse(localStorage.getItem('cs_library') || '[]');
+let currentResult = null;
+let currentMode = 'auto';
+let apiKey = localStorage.getItem('cs_apikey') || '';
+
+function saveLib() { localStorage.setItem('cs_library', JSON.stringify(library)); }
+function saveKey(v) { apiKey = v; localStorage.setItem('cs_apikey', v); }
+
+// Detect if we're running standalone (no server) by checking path
+const isStandalone = !window.location.host || window.location.protocol === 'file:';
+// Show API key banner if standalone
+if (isStandalone) {
+  document.getElementById('api-key-banner').style.display = 'flex';
+  document.getElementById('api-key-input').value = apiKey;
+}
+
+/* ── NAVIGATION ── */
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (name === 'library') renderLibrary();
+}
+
+/* ── MODE ── */
+function setMode(m, btn) {
+  currentMode = m;
+  ['auto','fullref','manual'].forEach(x => {
+    document.getElementById('inp-' + x).style.display = x === m ? 'block' : 'none';
+    document.getElementById('mtab-' + x).classList.remove('active');
+  });
+  btn.classList.add('active');
+  document.getElementById('src-type-group').style.display = m === 'manual' ? 'none' : 'flex';
+}
+
+/* ── INPUT ── */
+function getInput() {
+  if (currentMode === 'auto') return document.getElementById('auto-val').value.trim();
+  if (currentMode === 'fullref') return document.getElementById('fullref-val').value.trim();
+  const f = id => document.getElementById(id).value.trim();
+  return ['Author: '+f('m-author'),'Year: '+f('m-year'),'Title: '+f('m-title'),
+    'Journal/Publisher: '+f('m-journal'),'Volume/Issue: '+f('m-vol'),
+    'Pages: '+f('m-pages'),'DOI/URL: '+f('m-doi'),
+    'Type: '+document.getElementById('m-type').value].join('\n');
+}
+
+/* ── PROMPT ── */
+function buildPrompt(input, style, srcType) {
+  const base = `You are an expert academic citation formatter. Respond ONLY with a single valid JSON object — no markdown, no backticks, no preamble. Keys: reference (string), intext (string), style (string), source_type (string), web_verified (boolean), notes (string or null).`;
+  if (currentMode === 'auto') {
+    const isURL = /^https?:\/\//.test(input);
+    const isDOI = /^10\.\d{4,}/.test(input);
+    const isISBN = /^[\d\-X ]{10,20}$/.test(input);
+    let task = isURL ? `The input is a URL. Use web search to fetch metadata and format as ${style}.`
+      : isDOI ? `The input is a DOI. Search CrossRef/doi.org for metadata and format as ${style} ${srcType}.`
+      : isISBN ? `The input is an ISBN. Look up book metadata and format as ${style}.`
+      : `Identify this as URL/DOI/ISBN/title, search for metadata, format as ${style} ${srcType}.`;
+    return `${base}\n\n${task}\n\nInput: ${input}`;
+  }
+  if (currentMode === 'fullref') {
+    return `${base}\n\nUser's reference text:\n"${input}"\n\n1. Parse all metadata fields\n2. Use web search to verify/complete missing fields\n3. Correct errors\n4. Reformat perfectly in ${style} for ${srcType}\n5. notes field: mention corrections made (or null)\nSet web_verified: true if searched online.`;
+  }
+  return `${base}\n\nFormat this source as ${style} citation for ${srcType}:\n${input}\n\nSet web_verified: false.`;
+}
+
+/* ── GENERATE ── */
+async function generateCitation() {
+  const input = getInput();
+  if (!input || input.replace(/[\s:\n]/g,'') === '') { showError('Please enter a source to cite.'); return; }
+  if (isStandalone && !apiKey) { showError('Please enter your Anthropic API key above to use this feature.'); return; }
+
+  const style = document.getElementById('cite-style').value;
+  const srcType = currentMode === 'manual'
+    ? document.getElementById('m-type').value
+    : document.getElementById('cite-srctype').value;
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  showProgress(true);
+  hideError();
+  document.getElementById('result-card').style.display = 'none';
+
+  const msgs = currentMode === 'fullref'
+    ? ['Parsing reference...','Searching web to verify...','Reformatting citation...']
+    : ['Looking up metadata...','Formatting citation...'];
+  let mi = 0;
+  setStatus(msgs[mi], true);
+  const ticker = setInterval(() => { mi = Math.min(mi+1, msgs.length-1); setStatus(msgs[mi], true); }, 2000);
+
+  try {
+    let result;
+    if (isStandalone) {
+      // Direct API call (standalone file mode, user provides key)
+      result = await callDirectAPI(buildPrompt(input, style, srcType));
+    } else {
+      // Server proxy (recommended, no CORS issues)
+      const resp = await fetch('/api/cite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: buildPrompt(input, style, srcType), mode: currentMode })
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || `Server error ${resp.status}`);
+      }
+      result = await resp.json();
+    }
+    currentResult = { ...result, raw_input: input, mode: currentMode, savedAt: Date.now() };
+    showResult(result);
+    setStatus('Citation generated successfully.', false);
+  } catch (e) {
+    setStatus('', false);
+    showError('Generation failed: ' + e.message + '. Please check your input and try again.');
+    console.error(e);
+  }
+  clearInterval(ticker);
+  btn.disabled = false;
+  showProgress(false);
+}
+
+async function callDirectAPI(prompt) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      tools: currentMode !== 'manual' ? [{ type: 'web_search_20250305', name: 'web_search' }] : undefined,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${resp.status}`);
+  }
+  const data = await resp.json();
+  let raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  raw = raw.replace(/```json|```/g, '').trim();
+  return JSON.parse(raw);
+}
+
+function showResult(r) {
+  document.getElementById('r-ref').textContent = r.reference || '—';
+  document.getElementById('r-intext').textContent = r.intext || '—';
+  document.getElementById('rb-style').textContent = r.style || '';
+  const srcBadge = document.getElementById('rb-source');
+  srcBadge.textContent = r.web_verified ? 'Web verified' : (r.source_type || '');
+  srcBadge.className = 'badge ' + (r.web_verified ? 'badge-web' : 'badge-manual');
+  const nd = document.getElementById('r-notes');
+  if (r.notes) { nd.textContent = 'AI note: ' + r.notes; nd.style.display = 'block'; }
+  else nd.style.display = 'none';
+  document.getElementById('result-card').style.display = 'block';
+  document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function showProgress(on) {
+  const wrap = document.getElementById('prog-wrap');
+  const bar = document.getElementById('prog-bar');
+  if (on) {
+    wrap.style.display = 'block';
+    bar.style.transition = 'none'; bar.style.width = '0%';
+    setTimeout(() => { bar.style.transition = 'width 5s ease'; bar.style.width = '85%'; }, 50);
+  } else {
+    bar.style.width = '100%';
+    setTimeout(() => { wrap.style.display = 'none'; bar.style.width = '0%'; }, 400);
+  }
+}
+
+function setStatus(msg, loading) {
+  const el = document.getElementById('status-msg');
+  el.textContent = msg;
+  el.className = 'status-msg' + (loading ? ' loading' : '');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-card');
+  document.getElementById('error-msg').innerHTML = '<strong>Error:</strong> ' + esc(msg);
+  el.style.display = 'block';
+}
+function hideError() { document.getElementById('error-card').style.display = 'none'; }
+
+/* ── COPY ── */
+function copyText(which) {
+  if (!currentResult) return;
+  const txt = which === 'ref' ? currentResult.reference : currentResult.intext;
+  navigator.clipboard.writeText(txt || '').then(() => {
+    const fl = document.getElementById('copy-flash');
+    fl.classList.add('show');
+    setTimeout(() => fl.classList.remove('show'), 1800);
+  });
+}
+
+/* ── LIBRARY ── */
+function saveToLibrary() {
+  if (!currentResult) return;
+  library.unshift({ ...currentResult, id: Date.now() });
+  saveLib();
+  const btn = document.querySelector('.action-btn.primary');
+  if (btn) { btn.textContent = '✓ Saved!'; setTimeout(() => { btn.textContent = '+ Add to library'; }, 2000); }
+  updateStats();
+}
+
+function renderLibrary() {
+  updateStats();
+  const q = (document.getElementById('lib-search').value || '').toLowerCase();
+  const sf = document.getElementById('lib-style-filter').value;
+  let items = library;
+  if (q) items = items.filter(c => (c.reference || '').toLowerCase().includes(q));
+  if (sf) items = items.filter(c => c.style === sf);
+  const el = document.getElementById('lib-list');
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📚</div><p>${library.length ? 'No citations match your filter.' : 'No citations saved yet. Generate one and click "Add to library".'}</p></div>`;
+    return;
+  }
+  el.innerHTML = items.map(c => `
+    <div class="lib-item">
+      <div class="lib-item-ref">${esc(c.reference || '')}</div>
+      <div class="lib-item-meta">
+        <span class="badge badge-style">${esc(c.style || '')}</span>
+        <span class="badge ${c.web_verified ? 'badge-web' : 'badge-manual'}">${c.web_verified ? 'Verified' : esc(c.source_type || '')}</span>
+        <div class="lib-item-actions">
+          <button class="action-btn" onclick="copyLibItem('${c.id}')">Copy</button>
+          <button class="action-btn" onclick="deleteLibItem('${c.id}')">Remove</button>
+        </div>
+      </div>
+      ${c.notes ? `<div style="font-size:12px;color:var(--ink3);font-style:italic;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">Note: ${esc(c.notes)}</div>` : ''}
+    </div>`).join('');
+}
+
+function copyLibItem(id) {
+  const c = library.find(x => String(x.id) === String(id));
+  if (c) navigator.clipboard.writeText(c.reference || '');
+}
+function deleteLibItem(id) {
+  library = library.filter(x => String(x.id) !== String(id));
+  saveLib(); renderLibrary();
+}
+function updateStats() {
+  document.getElementById('st-total').textContent = library.length;
+  document.getElementById('st-verified').textContent = library.filter(c => c.web_verified).length;
+  document.getElementById('st-styles').textContent = new Set(library.map(c => c.style)).size;
+}
+
+/* ── EXPORT ── */
+function buildExport() {
+  const style = document.getElementById('exp-style').value;
+  const sort = document.getElementById('exp-sort').value;
+  const el = document.getElementById('exp-area');
+  if (!library.length) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><p>No citations in library yet.</p></div>'; return; }
+  let items = [...library];
+  if (sort === 'alpha') items.sort((a,b) => (a.reference||'').localeCompare(b.reference||''));
+  else if (sort === 'added') items.sort((a,b) => b.savedAt - a.savedAt);
+  else items.sort((a,b) => (a.style||'').localeCompare(b.style||''));
+
+  let output = '';
+  if (style === 'BibTeX') {
+    output = items.map((c,i) => {
+      const key = (c.reference||'').split(',')[0].replace(/\s+/g,'').toLowerCase().slice(0,20)+i;
+      return `@misc{${key},\n  note = {${(c.reference||'').replace(/[{}]/g,'')}}\n}`;
+    }).join('\n\n');
+  } else if (style === 'RIS format') {
+    output = items.map(c => `TY  - JOUR\nTI  - [see full reference]\nN1  - ${(c.reference||'').replace(/\n/g,' ')}\nER  -`).join('\n\n');
+  } else {
+    output = 'References\n\n' + items.map(c => c.reference||'').join('\n\n');
+  }
+  el.innerHTML = `<div class="export-output" id="exp-txt">${esc(output)}</div>
+    <div style="display:flex;gap:8px">
+      <button class="action-btn primary" onclick="copyExport()">Copy all</button>
+      <button class="action-btn" onclick="downloadExport()">Download .txt</button>
+    </div>`;
+}
+
+function copyExport() {
+  const el = document.getElementById('exp-txt');
+  if (el) navigator.clipboard.writeText(el.textContent||'');
+}
+function downloadExport() {
+  const el = document.getElementById('exp-txt');
+  if (!el) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([el.textContent], { type: 'text/plain' }));
+  a.download = 'citesmart-bibliography.txt';
+  a.click();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+updateStats();
+</script>
+</body>
+</html>
